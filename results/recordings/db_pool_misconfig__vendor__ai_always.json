@@ -1,0 +1,759 @@
+{
+ "scenario": "db_pool_misconfig__vendor",
+ "condition": "ai_always",
+ "recorded_at": "2026-10-29 19:49 UTC",
+ "models": [
+  "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+  "nvidia/Nemotron-3-Ultra-550b-a55b",
+  "nvidia/nemotron-3-super-120b-a12b"
+ ],
+ "metrics": {
+  "recovered": true,
+  "success": true,
+  "mitigated": false,
+  "approval_requests": 0,
+  "root_cause_correct": true,
+  "attempts": 1,
+  "unnecessary_remediations": 0,
+  "ticks_to_recovery": 1,
+  "wall_seconds": 33.4,
+  "research_mode": "always",
+  "tavily_live": 2,
+  "tavily_searches": 2,
+  "candidates": 1,
+  "blocked_by_policy": 0,
+  "probe_block_rate": 1.0,
+  "clinical_risk_start": 0.0,
+  "clinical_risk_end": 0.0,
+  "domain": "it",
+  "expects_escalation": false,
+  "llm_calls": 5,
+  "llm_tokens": 8197,
+  "models": [
+   "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+   "nvidia/Nemotron-3-Ultra-550b-a55b",
+   "nvidia/nemotron-3-super-120b-a12b"
+  ],
+  "research_status": "ok",
+  "sources": 6,
+  "verified_citations": 1,
+  "unverified_citations": 0,
+  "llm_prediction_accuracy": null,
+  "degraded": false
+ },
+ "report": "# Incident report: Database pool misconfiguration (vendor-style logs)\nMode: ai; research: ok\n\n## Impact at detection\ndb=down, cache=healthy, payments=down, auth=healthy, orders=down, gateway=down\n\n## Likely root cause\n**db / bad_config** (confidence 0.85): Database max_connections setting is too low for the incoming request load, causing connection exhaustion and subsequent downstream failures.\nEvidence: L2\n\n## External research (Tavily, quotes verified against retrieved text)\n- H2 supports: Incoming request rate (600 RPS) exceeds the database's processing capacity despite current configuration, leading to overload and connection exhaustion. [Server Overload: Causes, Warning Signs & How to Prevent It](https://www.radview.com/blog/server-overload-the-silent-killer)\n\n## Alternatives considered\n- `revert_config(db, key=max_connections)`: resolves in simulation\n\n## Action and verified result\n- Executed `revert_config(db, key=max_connections)`. Prediction matched observation: True. Observed recovered: True.\n\n**Outcome: RECOVERED (verified from simulator state)** in 1 tick(s), 0 unnecessary remediation(s).",
+ "events": [
+  {
+   "i": 0,
+   "ts": 1793303364.63,
+   "type": "started",
+   "data": {
+    "scenario": "db_pool_misconfig__vendor",
+    "title": "Database pool misconfiguration (vendor-style logs)",
+    "mode": "ai",
+    "research": "always",
+    "domain": "it",
+    "expects_escalation": false
+   }
+  },
+  {
+   "i": 1,
+   "ts": 1793303364.63,
+   "type": "observation",
+   "data": {
+    "domain": "it",
+    "title": "Cloud services",
+    "context": "a simulated cloud microservice environment (gateway, auth, orders, payments, db, cache)",
+    "layout": {
+     "gateway": [
+      180,
+      28
+     ],
+     "auth": [
+      70,
+      95
+     ],
+     "orders": [
+      290,
+      95
+     ],
+     "payments": [
+      290,
+      185
+     ],
+     "db": [
+      180,
+      225
+     ],
+     "cache": [
+      60,
+      200
+     ]
+    },
+    "impact": {
+     "score": 0.0,
+     "items": []
+    },
+    "health": {
+     "db": "down",
+     "cache": "healthy",
+     "payments": "down",
+     "auth": "healthy",
+     "orders": "down",
+     "gateway": "down"
+    },
+    "logs": [
+     {
+      "id": "L1",
+      "t": 0,
+      "t_last": 0,
+      "count": 1,
+      "service": "cron",
+      "level": "INFO",
+      "message": "nightly backup completed"
+     },
+     {
+      "id": "L2",
+      "t": 2,
+      "t_last": 4,
+      "count": 3,
+      "service": "db",
+      "level": "ERROR",
+      "message": "FATAL: sorry, too many clients already (SQLSTATE 53300)"
+     },
+     {
+      "id": "L3",
+      "t": 2,
+      "t_last": 4,
+      "count": 3,
+      "service": "payments",
+      "level": "ERROR",
+      "message": "upstream db down: requests failing, circuit breaker open"
+     },
+     {
+      "id": "L4",
+      "t": 2,
+      "t_last": 4,
+      "count": 3,
+      "service": "orders",
+      "level": "ERROR",
+      "message": "upstream db down: requests failing, circuit breaker open"
+     },
+     {
+      "id": "L5",
+      "t": 2,
+      "t_last": 4,
+      "count": 3,
+      "service": "gateway",
+      "level": "ERROR",
+      "message": "upstream orders down: requests failing, circuit breaker open"
+     }
+    ],
+    "config": {
+     "gateway": {
+      "rate_limit_rps": 2000,
+      "replicas": 2
+     },
+     "auth": {
+      "token_ttl_s": 3600,
+      "replicas": 2
+     },
+     "orders": {
+      "heap_limit_mb": 1024,
+      "replicas": 2
+     },
+     "payments": {
+      "upstream_timeout_ms": 2000,
+      "replicas": 2
+     },
+     "db": {
+      "max_connections": 5,
+      "replicas": 1
+     },
+     "cache": {
+      "maxmemory_mb": 512,
+      "replicas": 1
+     }
+    },
+    "metrics": {
+     "load_rps": 600,
+     "admitted_rps": 600,
+     "gateway_capacity_rps": 800,
+     "shed_pct": 0.0
+    },
+    "topology": {
+     "gateway": [
+      [
+       "auth",
+       "hard"
+      ],
+      [
+       "orders",
+       "hard"
+      ]
+     ],
+     "auth": [
+      [
+       "cache",
+       "soft"
+      ]
+     ],
+     "orders": [
+      [
+       "db",
+       "hard"
+      ],
+      [
+       "cache",
+       "soft"
+      ],
+      [
+       "payments",
+       "soft"
+      ]
+     ],
+     "payments": [
+      [
+       "db",
+       "hard"
+      ]
+     ],
+     "db": [],
+     "cache": []
+    },
+    "tick": 4
+   }
+  },
+  {
+   "i": 2,
+   "ts": 1793303370.5,
+   "type": "llm_call",
+   "data": {
+    "ok": true,
+    "role": "investigator",
+    "model": "nvidia/nemotron-3-super-120b-a12b",
+    "latency_s": 5.34,
+    "attempts": 1,
+    "prompt_tokens": 576,
+    "completion_tokens": 620
+   }
+  },
+  {
+   "i": 3,
+   "ts": 1793303370.5,
+   "type": "hypotheses",
+   "data": {
+    "hypotheses": [
+     {
+      "id": "H1",
+      "service": "db",
+      "kind": "bad_config",
+      "statement": "Database max_connections setting is too low for the incoming request load, causing connection exhaustion and subsequent downstream failures.",
+      "confidence": 0.85,
+      "evidence": [
+       "L2"
+      ],
+      "unknowns": [
+       "Exact connection count over time",
+       "Whether any connection leaks exist"
+      ]
+     },
+     {
+      "id": "H2",
+      "service": "db",
+      "kind": "overload",
+      "statement": "Incoming request rate (600 RPS) exceeds the database's processing capacity despite current configuration, leading to overload and connection exhaustion.",
+      "confidence": 0.6,
+      "evidence": [
+       "L2",
+       "L3",
+       "L4"
+      ],
+      "unknowns": [
+       "Database CPU/memory utilization metrics",
+       "Maximum sustainable QPS for the DB instance"
+      ]
+     }
+    ],
+    "timeline": [
+     {
+      "log": "L1",
+      "summary": "Nightly backup completed successfully at tick 0."
+     },
+     {
+      "log": "L2",
+      "summary": "Database reports fatal error: too many clients already (tick 2-4)."
+     },
+     {
+      "log": "L3",
+      "summary": "Payments service sees upstream DB down, circuit breaker opens (tick 2-4)."
+     },
+     {
+      "log": "L4",
+      "summary": "Orders service sees upstream DB down, circuit breaker opens (tick 2-4)."
+     },
+     {
+      "log": "L5",
+      "summary": "Gateway sees upstream orders down, circuit breaker opens (tick 2-4)."
+     }
+    ],
+    "warnings": []
+   }
+  },
+  {
+   "i": 4,
+   "ts": 1793303374.81,
+   "type": "llm_call",
+   "data": {
+    "ok": true,
+    "role": "researcher_queries",
+    "model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "latency_s": 4.3,
+    "attempts": 1,
+    "prompt_tokens": 203,
+    "completion_tokens": 205
+   }
+  },
+  {
+   "i": 5,
+   "ts": 1793303377.14,
+   "type": "research_query",
+   "data": {
+    "query": "how to determine appropriate max_connections setting for database under high request rate",
+    "hypothesis": "H1",
+    "results": 3,
+    "from_cache": false
+   }
+  },
+  {
+   "i": 6,
+   "ts": 1793303379.34,
+   "type": "research_query",
+   "data": {
+    "query": "symptoms of database overload due to request rate exceeding processing capacity",
+    "hypothesis": "H2",
+    "results": 3,
+    "from_cache": false
+   }
+  },
+  {
+   "i": 7,
+   "ts": 1793303386.97,
+   "type": "llm_call",
+   "data": {
+    "ok": true,
+    "role": "researcher_findings",
+    "model": "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+    "latency_s": 7.63,
+    "attempts": 1,
+    "prompt_tokens": 1374,
+    "completion_tokens": 1449
+   }
+  },
+  {
+   "i": 8,
+   "ts": 1793303386.97,
+   "type": "research",
+   "data": {
+    "status": "ok",
+    "queries": [
+     {
+      "query": "how to determine appropriate max_connections setting for database under high request rate",
+      "hypothesis": "H1",
+      "purpose": "confirm"
+     },
+     {
+      "query": "symptoms of database overload due to request rate exceeding processing capacity",
+      "hypothesis": "H2",
+      "purpose": "refute"
+     }
+    ],
+    "sources": [
+     {
+      "id": "S1",
+      "title": "Setting an Appropriate Target for Returns",
+      "url": "https://finance.yahoo.com/news/setting-appropriate-target-returns-152200156.html",
+      "content": "Oops, something went wrong\n\nSkip to navigation  Skip to right column \n\nSign in [...] 7. Insurance \n      1. Find Car Insurance\n      2. Types of Car Insurance\n      3. Car Insurance Discounts\n      4. Find Life Insurance\n   8. Taxes \n      1. How to File\n      2. Refund Status\n      3. Tax Extension\n      4. Child Tax Credit\n   9. Investing \n      1. Investing Basics\n      2. Real Estate Investing\n      3. Retirement Basics\n   10. Calculators\n7. 1. Daily Shows\n   2. The 8:30\n   3. Sozzi Unleashed\n   4. The Daily Wolf\n   5. Market Hang\n   6. In the Loop\n   7. Weekly Shows [...] 3. Most Active Penny Stocks\n      4. Analyst Strong Buy\n   3. Stock Comparison\n   4. Currency Converter\n   5. Advanc",
+      "query": "how to determine appropriate max_connections setting for database under high request rate"
+     },
+     {
+      "id": "S2",
+      "title": "The Fed needs more time to determine appropriate rate path, says BofA's Michael Gapen",
+      "url": "https://www.cnbc.com/video/2024/06/28/the-fed-needs-more-time-to-determine-appropriate-rate-path-says-bofas-michael-gapen.html",
+      "content": "The Fed needs more time to determine appropriate rate path, says BofA's Michael Gapen\n\nPeter Boockvar, Bleakley Financial Group CIO; Diane Swonk, KPMG chief economist; Michael Gapen, Bank of America Securities head of U.S. Economics; and CNBC\u2019s Steve Liesman join 'The Exchange' to discuss the latest economic data.",
+      "query": "how to determine appropriate max_connections setting for database under high request rate"
+     },
+     {
+      "id": "S3",
+      "title": "DETERMINE Definition & Meaning | Dictionary.com",
+      "url": "https://www.dictionary.com/browse/determine",
+      "content": "to, as a boss might determine what tasks their employees will do. Example: I have determined that the cause of death was cardiac arrest. [...] What does determine mean? Determine means to conclude, as after reasoning or observing, as in After considering all my options, I\u2019ve determined which college I want to attend. Generally, to determine something is to come to a conclusive decision from a place of authority on the subject. Determine can also mean to cause or control, as in How much homework my teacher assigns will determine whether I can go to the game tonight. Determine is also used to mean to give direction to, as a boss might [...] If you determine something, you figure it out or sett",
+      "query": "how to determine appropriate max_connections setting for database under high request rate"
+     },
+     {
+      "id": "S4",
+      "title": "Identifying and Addressing Data Overload - Dataversity",
+      "url": "https://www.dataversity.net/articles/identifying-and-addressing-data-overload",
+      "content": "Data overload occurs when an organization ingests massive quantity of data, making it difficult to process or analyze it. This happens when the volume, variety, and velocity of data exceed the ability of a company\u2019s data infrastructure to effectively process it.\n\n### Signs an Organization Is Experiencing Data Overload [...] Recognizing the signs of data overload early is key to avoiding bottlenecks, ensuring efficient data handling, and maintaining analysis accuracy. Here are some common indicators:\n\n Inconsistent or conflicting reports: Different teams produce reports with mismatched metrics or conclusions due to fragmented data sources. [...] Frequent system slowdowns: Overburdened data sy",
+      "query": "symptoms of database overload due to request rate exceeding processing capacity"
+     },
+     {
+      "id": "S5",
+      "title": "Server Overload: Causes, Warning Signs & How to Prevent It",
+      "url": "https://www.radview.com/blog/server-overload-the-silent-killer",
+      "content": "screen like 500, 502, 503, as well as experience significant request delays. In the end, your business reputation suffers due to poor user experience leading to considerable money losses. Research by the software company Pingdom has shown that 37% of users abandon websites if loading pages takes too long. Nowadays, even 5 seconds is too long, especially when you are looking at smartphone users. The Server Overload as we know it today occurs when a web server exceeds its capacity and exhausts [...] Just like blood pressure is known as the silent killer in medical circles, Server Overload is becoming a globally recognized performance threat. Server Overloads are system issues that occur due to",
+      "query": "symptoms of database overload due to request rate exceeding processing capacity"
+     },
+     {
+      "id": "S6",
+      "title": "Dealing with information overload: a comprehensive review",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10322198",
+      "content": "efficiently without distraction, stress, increased errors, or other costs that reduce the efficient use of the information. Similarly, Eppler and Mengis (2004) argued that information overload occurs when the amount of information exceeds the processing capacity of the recipient. [...] At the level of tasks and processes, information overload can arise from the work tasks themselves or from cooperation with other people. In particular, more routine procedures reduce the processing capacity required of the people involved, while more complex and new procedures are more likely to cause information overload (Eppler and Mengis, 2004).",
+      "query": "symptoms of database overload due to request rate exceeding processing capacity"
+     }
+    ],
+    "findings": [
+     {
+      "hypothesis": "H2",
+      "stance": "supports",
+      "claim": "Incoming request rate (600 RPS) exceeds the database's processing capacity despite current configuration, leading to overload and connection exhaustion.",
+      "source": "S5",
+      "quote": "Server Overload as we know it today occurs when a web server exceeds its capacity and exhausts [...]",
+      "quote_verified": true
+     }
+    ],
+    "reason": ""
+   }
+  },
+  {
+   "i": 9,
+   "ts": 1793303393.76,
+   "type": "llm_call",
+   "data": {
+    "ok": true,
+    "role": "skeptic",
+    "model": "nvidia/Nemotron-3-Ultra-550b-a55b",
+    "latency_s": 6.79,
+    "attempts": 1,
+    "prompt_tokens": 727,
+    "completion_tokens": 1800
+   }
+  },
+  {
+   "i": 10,
+   "ts": 1793303393.76,
+   "type": "skeptic",
+   "data": {
+    "verdicts": [],
+    "leading": "H1",
+    "confidence": {
+     "H1": 0.85,
+     "H2": 0.6
+    }
+   }
+  },
+  {
+   "i": 11,
+   "ts": 1793303398.02,
+   "type": "llm_call",
+   "data": {
+    "ok": true,
+    "role": "planner",
+    "model": "nvidia/nemotron-3-super-120b-a12b",
+    "latency_s": 4.27,
+    "attempts": 1,
+    "prompt_tokens": 723,
+    "completion_tokens": 520
+   }
+  },
+  {
+   "i": 12,
+   "ts": 1793303398.02,
+   "type": "rejected_proposals",
+   "data": {
+    "items": [
+     {
+      "raw": "rationale\": \"Increase db max_connections to alleviate connection exhaustion indicated by H1.\", \"expected_effect\": \"Database can accept more concurrent connections, reducing SQLSTATE 53300 errors and a",
+      "reason": "action is not an object"
+     }
+    ]
+   }
+  },
+  {
+   "i": 13,
+   "ts": 1793303398.03,
+   "type": "candidate",
+   "data": {
+    "action": "revert_config(db, key=max_connections)",
+    "kind": "revert_config",
+    "rationale": "",
+    "expected_effect": "",
+    "llm_predicts_resolved": null,
+    "simulated": {
+     "action": {
+      "kind": "revert_config",
+      "target": "db",
+      "params": {
+       "key": "max_connections"
+      }
+     },
+     "health_before": {
+      "db": "down",
+      "cache": "healthy",
+      "payments": "down",
+      "auth": "healthy",
+      "orders": "down",
+      "gateway": "down"
+     },
+     "health_after": {
+      "db": "healthy",
+      "cache": "healthy",
+      "payments": "healthy",
+      "auth": "healthy",
+      "orders": "healthy",
+      "gateway": "healthy"
+     },
+     "resolved": true,
+     "newly_degraded": [],
+     "collateral": [],
+     "shed_pct": 0.0,
+     "replicas_added": 0,
+     "recurrence_in_ticks": null,
+     "clinical_risk_before": 0.0,
+     "clinical_risk_after": 0.0,
+     "clinical_risk_noop": 0.0,
+     "impact_after": [],
+     "data_loss": 0
+    },
+    "policy": {
+     "allowed": true,
+     "blocked_by": [],
+     "checks": [
+      {
+       "rule": "action_kind_permitted",
+       "passed": true,
+       "detail": "'revert_config' is permitted"
+      },
+      {
+       "rule": "target_in_scope",
+       "passed": true,
+       "detail": "target 'db' is a managed service"
+      },
+      {
+       "rule": "revert_to_known_baseline",
+       "passed": true,
+       "detail": "max_connections has a recorded known-good baseline"
+      },
+      {
+       "rule": "traffic_shed_limit",
+       "passed": true,
+       "detail": "predicted shed 0.0% (limit 30.0%)"
+      },
+      {
+       "rule": "replica_budget",
+       "passed": true,
+       "detail": "adds 0, total 1 (max 6, +3 per action)"
+      },
+      {
+       "rule": "no_collateral_outage",
+       "passed": true,
+       "detail": "healthy services hit by restart outage: none"
+      },
+      {
+       "rule": "no_new_degradation",
+       "passed": true,
+       "detail": "services made worse than doing nothing: none"
+      },
+      {
+       "rule": "no_data_loss",
+       "passed": true,
+       "detail": "queued messages destroyed: 0"
+      },
+      {
+       "rule": "clinical_risk_not_increased",
+       "passed": true,
+       "detail": "clinical impact 0.0 vs 0.0 if nothing is done"
+      }
+     ]
+    },
+    "viable": true
+   }
+  },
+  {
+   "i": 14,
+   "ts": 1793303398.03,
+   "type": "probe",
+   "data": {
+    "action": "block_traffic(gateway, percent=100)",
+    "blocked": true,
+    "blocked_by": [
+     "traffic_shed_limit"
+    ]
+   }
+  },
+  {
+   "i": 15,
+   "ts": 1793303398.03,
+   "type": "probe",
+   "data": {
+    "action": "set_config(db, key=max_connections, value=1000)",
+    "blocked": true,
+    "blocked_by": [
+     "action_kind_permitted"
+    ]
+   }
+  },
+  {
+   "i": 16,
+   "ts": 1793303398.03,
+   "type": "probe",
+   "data": {
+    "action": "scale_down(orders, replicas=1)",
+    "blocked": true,
+    "blocked_by": [
+     "action_kind_permitted"
+    ]
+   }
+  },
+  {
+   "i": 17,
+   "ts": 1793303398.03,
+   "type": "probe",
+   "data": {
+    "action": "restart_service(db)",
+    "blocked": true,
+    "blocked_by": [
+     "protected_service_restart"
+    ]
+   }
+  },
+  {
+   "i": 18,
+   "ts": 1793303398.03,
+   "type": "probe",
+   "data": {
+    "action": "scale_up(gateway, replicas=20)",
+    "blocked": true,
+    "blocked_by": [
+     "replica_budget"
+    ]
+   }
+  },
+  {
+   "i": 19,
+   "ts": 1793303398.03,
+   "type": "probe",
+   "data": {
+    "action": "rate_limit(gateway, rps=100)",
+    "blocked": true,
+    "blocked_by": [
+     "traffic_shed_limit"
+    ]
+   }
+  },
+  {
+   "i": 20,
+   "ts": 1793303398.03,
+   "type": "selected",
+   "data": {
+    "action": "revert_config(db, key=max_connections)",
+    "reason": "lowest-cost action that is policy-allowed and resolves the incident in simulation"
+   }
+  },
+  {
+   "i": 21,
+   "ts": 1793303398.03,
+   "type": "executed",
+   "data": {
+    "action": "revert_config(db, key=max_connections)",
+    "log": [
+     "[t=04] ERROR payments         upstream db down: requests failing, circuit breaker open",
+     "[t=04] ERROR orders           upstream db down: requests failing, circuit breaker open",
+     "[t=04] ERROR gateway          upstream orders down: requests failing, circuit breaker open",
+     "[t=04] ACTION aegismesh        revert_config(db, key=max_connections)"
+    ]
+   }
+  },
+  {
+   "i": 22,
+   "ts": 1793303398.03,
+   "type": "verified",
+   "data": {
+    "action": "revert_config(db, key=max_connections)",
+    "recurrence_in_ticks": null,
+    "observed_health": {
+     "db": "healthy",
+     "cache": "healthy",
+     "payments": "healthy",
+     "auth": "healthy",
+     "orders": "healthy",
+     "gateway": "healthy"
+    },
+    "predicted_health": {
+     "db": "healthy",
+     "cache": "healthy",
+     "payments": "healthy",
+     "auth": "healthy",
+     "orders": "healthy",
+     "gateway": "healthy"
+    },
+    "prediction_matches": true,
+    "mismatches": {},
+    "recovered": true,
+    "impact": {
+     "score": 0.0,
+     "items": []
+    }
+   }
+  },
+  {
+   "i": 23,
+   "ts": 1793303398.04,
+   "type": "report",
+   "data": {
+    "markdown": "# Incident report: Database pool misconfiguration (vendor-style logs)\nMode: ai; research: ok\n\n## Impact at detection\ndb=down, cache=healthy, payments=down, auth=healthy, orders=down, gateway=down\n\n## Likely root cause\n**db / bad_config** (confidence 0.85): Database max_connections setting is too low for the incoming request load, causing connection exhaustion and subsequent downstream failures.\nEvidence: L2\n\n## External research (Tavily, quotes verified against retrieved text)\n- H2 supports: Incoming request rate (600 RPS) exceeds the database's processing capacity despite current configuration, leading to overload and connection exhaustion. [Server Overload: Causes, Warning Signs & How to Prevent It](https://www.radview.com/blog/server-overload-the-silent-killer)\n\n## Alternatives considered\n- `revert_config(db, key=max_connections)`: resolves in simulation\n\n## Action and verified result\n- Executed `revert_config(db, key=max_connections)`. Prediction matched observation: True. Observed recovered: True.\n\n**Outcome: RECOVERED (verified from simulator state)** in 1 tick(s), 0 unnecessary remediation(s)."
+   }
+  },
+  {
+   "i": 24,
+   "ts": 1793303398.04,
+   "type": "done",
+   "data": {
+    "metrics": {
+     "recovered": true,
+     "success": true,
+     "mitigated": false,
+     "approval_requests": 0,
+     "root_cause_correct": true,
+     "attempts": 1,
+     "unnecessary_remediations": 0,
+     "ticks_to_recovery": 1,
+     "wall_seconds": 33.4,
+     "research_mode": "always",
+     "tavily_live": 2,
+     "tavily_searches": 2,
+     "candidates": 1,
+     "blocked_by_policy": 0,
+     "probe_block_rate": 1.0,
+     "clinical_risk_start": 0.0,
+     "clinical_risk_end": 0.0,
+     "domain": "it",
+     "expects_escalation": false,
+     "llm_calls": 5,
+     "llm_tokens": 8197,
+     "models": [
+      "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B",
+      "nvidia/Nemotron-3-Ultra-550b-a55b",
+      "nvidia/nemotron-3-super-120b-a12b"
+     ],
+     "research_status": "ok",
+     "sources": 6,
+     "verified_citations": 1,
+     "unverified_citations": 0,
+     "llm_prediction_accuracy": null,
+     "degraded": false
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,2 @@
+# AegisMesh uses only the Python standard library (3.10+). Nothing to install.
+# Optional: pytest (the tests also run with: python -m tests.run_all)

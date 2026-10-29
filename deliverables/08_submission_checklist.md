@@ -1,0 +1,15 @@
+# Final checklist (deadline Oct 30, 2026, 10:00 AM PDT = 10:30 PM IST)
+- [ ] Real Nebius API key in `.env`; `python scripts/smoke_live.py` passes
+- [ ] `python scripts/finalize_submission.py` finished; `deliverables/RESULTS.md` exists
+- [ ] `python -m tests.run_all` passes (39 tests, no keys needed)
+- [ ] GitHub repo is **public**; About shows the MIT license; `.env` is NOT in the repo; recordings and cache are committed
+- [ ] README top section shows how Nemotron, Token Factory and Tavily are used
+- [ ] Demo URL works in a private window: one live run and one replay
+- [ ] Video: under 3:00, public on YouTube, plays in a private window, no keys or copyrighted music on screen
+- [ ] Track selected: Best Apps and Agents
+- [ ] Feedback section pasted from `06_feedback.md` after adding your observations
+- [ ] "Existed before the Submission Period?" answered
+- [ ] Builders & Brews city chosen only if you attended
+- [ ] Description pasted, testing instructions pasted, all ⟦placeholders⟧ replaced
+- [ ] Submitted at least a few hours before the deadline; screenshot of the confirmation
+- [ ] Afterwards: revoke the shared keys and create new ones

@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AegisMesh incident command</title>
+<style>
+:root{--bg:#eceff3;--panel:#fff;--ink:#14202b;--mute:#5d6b78;--line:#cfd7df;--ok:#1d7f5f;--warn:#b7791f;--down:#c2412d;--ai:#2f5fd0;--okbg:#e2f3ec;--warnbg:#fbf0d9;--downbg:#f9e1dc;--aibg:#e4ebfb;
+--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;--sans:"Avenir Next","Segoe UI",system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root{--bg:#10161c;--panel:#18212a;--ink:#e6ecf1;--mute:#93a2b0;--line:#2c3945;--ok:#47c297;--warn:#e0a53a;--down:#ef7a66;--ai:#7fa2f5;--okbg:#14342a;--warnbg:#38300f;--downbg:#3b1d19;--aibg:#1b2a4d}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 var(--sans)}
+header{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;padding:14px 20px;background:var(--panel);border-bottom:1px solid var(--line)}
+h1{font-size:18px;margin:0;letter-spacing:.2px}h1 small{display:block;font-weight:400;font-size:12px;color:var(--mute)}
+.ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-left:auto}
+select,button{font:inherit;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+button.go{background:var(--ink);color:var(--panel);border-color:var(--ink);font-weight:600;cursor:pointer}button:disabled{opacity:.5}
+:focus-visible{outline:2px solid var(--ai);outline-offset:2px}
+label{display:flex;gap:5px;align-items:center;color:var(--mute)}
+#banner{padding:10px 20px;font-weight:600;border-bottom:1px solid var(--line);background:var(--panel)}
+#banner.down{background:var(--downbg);color:var(--down)}#banner.ok{background:var(--okbg);color:var(--ok)}#banner.work{background:var(--aibg);color:var(--ai)}
+#phases{display:flex;gap:4px;padding:8px 20px;overflow:auto;background:var(--panel);border-bottom:1px solid var(--line)}
+#phases span{padding:3px 10px;border-radius:99px;border:1px solid var(--line);color:var(--mute);white-space:nowrap;font-size:12px}
+#phases span.on{background:var(--ai);color:#fff;border-color:var(--ai)}#phases span.done{background:var(--okbg);color:var(--ok);border-color:var(--ok)}
+main{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:14px 20px;align-items:start}
+@media(max-width:1100px){main{grid-template-columns:1fr 1fr}}@media(max-width:700px){main{grid-template-columns:1fr;padding:10px}}
+section{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;min-width:0}
+section h2{margin:0 0 8px;font-size:14px}section h2 em{font-style:normal;color:var(--mute);font-weight:400;margin-left:6px}
+.wide{grid-column:1/-1}.mono{font-family:var(--mono);font-size:12px}.mute{color:var(--mute)}
+svg text{font:12px var(--sans);fill:var(--ink)}.node circle{stroke-width:3;transition:fill .5s,stroke .5s}
+.healthy circle{fill:var(--okbg);stroke:var(--ok)}.degraded circle{fill:var(--warnbg);stroke:var(--warn)}.down circle{fill:var(--downbg);stroke:var(--down)}
+.edge{stroke:var(--line);stroke-width:2}.edge.soft{stroke-dasharray:4 4}.root circle{stroke-dasharray:3 3;stroke-width:4}
+#logs{max-height:240px;overflow:auto}.log{display:grid;grid-template-columns:34px 52px 1fr;gap:6px;padding:2px 4px;border-radius:4px}
+.log.hit{background:var(--aibg)}.lv-ERROR{color:var(--down)}.lv-WARN{color:var(--warn)}
+.card{border:1px solid var(--line);border-radius:6px;padding:8px 10px;margin-bottom:8px}.card.lead{border-color:var(--ai);box-shadow:inset 3px 0 0 var(--ai)}
+.bar{height:6px;background:var(--line);border-radius:3px;margin:5px 0}.bar i{display:block;height:100%;background:var(--ai);border-radius:3px;transition:width .6s}
+.chip{display:inline-block;font:11px var(--mono);padding:1px 6px;border:1px solid var(--line);border-radius:4px;margin:1px;cursor:pointer;background:none;color:var(--ink)}
+.tag{font-size:11px;padding:1px 7px;border-radius:99px;font-weight:600}.t-ok{background:var(--okbg);color:var(--ok)}.t-bad{background:var(--downbg);color:var(--down)}.t-warn{background:var(--warnbg);color:var(--warn)}.t-ai{background:var(--aibg);color:var(--ai)}
+table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--mute);font-weight:600}
+tr.sel{background:var(--okbg)}a{color:var(--ai)}pre{white-space:pre-wrap;font:12px/1.5 var(--mono);margin:0;max-height:340px;overflow:auto}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}.kv div{border:1px solid var(--line);border-radius:6px;padding:6px 8px}.kv b{display:block;font-size:18px}.kv span{font-size:11px;color:var(--mute)}
+</style>
+</head>
+<body>
+<header>
+  <h1>AegisMesh<small>Incident command on a simulated environment. Nothing here touches real infrastructure.</small></h1>
+  <div class="ctl">
+    <select id="dom" aria-label="Environment"><option value="it">Cloud services</option><option value="hospital">Hospital IT (synthetic)</option></select>
+    <select id="sc" aria-label="Scenario"></select>
+    <select id="mode" aria-label="Mode"><option value="ai">AI investigation (Nemotron on Token Factory)</option><option value="baseline">Rule-based baseline (no AI)</option><option value="replay">Replay a recorded live run (0 API calls)</option></select>
+    <label>Tavily research <select id="rs" aria-label="Tavily research"><option value="adaptive">adaptive (saves credits)</option><option value="always">always</option><option value="off">off</option></select></label>
+    <button class="go" id="run">Inject incident and respond</button>
+  </div>
+</header>
+<div id="banner" class="work">Select a scenario and start an incident.</div>
+<div id="note" hidden style="padding:6px 20px;font-size:12px;background:var(--aibg);color:var(--ai)">Hospital IT mode is a simulation with synthetic data. It is not a medical device and gives no clinical advice. Patient safety outranks speed: life-critical systems are never restarted without a human.</div>
+<div id="usage" class="mute" style="padding:4px 20px;font-size:12px"></div>
+<div id="phases"></div>
+<main>
+  <section><h2>Services<em id="gtick"></em></h2><svg id="graph" viewBox="0 0 360 275" width="100%" role="img" aria-label="Service dependency graph"></svg><div class="mute" style="font-size:12px">Dashed edges are soft dependencies. Dashed ring marks the leading root-cause hypothesis.</div></section>
+  <section><h2>Timeline<em>logs at detection</em></h2><div id="logs" class="mono"></div></section>
+  <section><h2>Root-cause hypotheses</h2><div id="hyps" class="mute">Waiting for the Investigator.</div></section>
+  <section><h2>External research<em id="rstat"></em></h2><div id="research" class="mute">Not started.</div></section>
+  <section class="wide" style="grid-column:span 2"><h2>Candidate actions: predicted, simulated, policy<em id="cstat"></em></h2><div style="overflow:auto"><table id="cands"><thead><tr><th>Action</th><th>Model expected</th><th>Simulator result</th><th>Policy</th></tr></thead><tbody></tbody></table></div></section>
+  <section><h2>Execution and verification</h2><div id="verify" class="mute">Nothing executed yet.</div></section>
+  <section id="clin" hidden><h2>Clinical impact<em id="clinscore"></em></h2><div id="clinitems"></div></section>
+  <section><h2>Outcome</h2><div id="metrics" class="kv"></div></section>
+  <section><h2>Token Factory calls<em id="llmstat"></em></h2><div id="llm" class="mono mute">No calls yet.</div></section>
+  <section><h2>Policy red-team<em>prohibited actions, tried every run</em></h2><div id="probes" class="mono mute">Runs with each incident.</div></section>
+  <section class="wide"><h2>Incident report</h2><pre id="report" class="mute">Generated when the run finishes.</pre></section>
+  <section class="wide"><h2>Recorded evaluation<em>results/eval_latest.json, produced by python -m aegismesh.eval</em></h2><div id="eval" class="mute">Loading.</div></section>
+</main>
+<script>
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PH=['Observe','Investigate','Research','Challenge','Plan','Simulate','Execute','Verify'];
+let S,es,pend=false;
+function fresh(){S={impact:null,appr:[],mit:null,esc:'',obs:null,hyps:[],tl:[],res:null,sk:null,cands:[],sel:null,ver:[],llm:[],probes:[],metrics:null,report:'',phase:-1,done:false,err:'',health:null,replan:false,hl:[]}}
+fresh();
+function reduce(e){const d=e.data;switch(e.type){
+case'started':S.phase=0;break;
+case'replay':S.replay=d;break;
+case'observation':S.obs=d;S.health=d.health;S.impact=d.impact;break;
+case'hypotheses':S.hyps=d.hypotheses;S.tl=d.timeline;S.phase=1;break;
+case'research_query':S.phase=2;(S.rq=S.rq||[]).push(d);break;
+case'research':S.res=d;S.phase=3;break;
+case'skeptic':S.sk=d;S.phase=4;S.hyps.forEach(h=>h.confidence=d.confidence[h.id]??h.confidence);S.lead=d.leading;break;
+case'candidate':S.cands.push(d);S.phase=5;break;
+case'replan':S.replan=true;break;
+case'selected':S.sel=d.action;S.phase=6;break;
+case'executed':break;
+case'verified':S.ver.push(d);S.health=d.observed_health;S.impact=d.impact;S.phase=7;break;
+case'approval_request':S.appr.push(d);break;
+case'mitigation':S.mit=d;S.health=d.observed_health;S.impact=d.impact;S.phase=7;break;
+case'llm_call':S.llm.push(d);break;
+case'probe':S.probes.push(d);break;
+case'agent_error':S.err=d.error+' Fell back to: '+d.fallback+'.';break;
+case'escalate':S.esc=d.message;break;
+case'fatal':S.err=d.error;S.done=true;break;
+case'report':S.report=d.markdown;break;
+case'done':S.metrics=d.metrics;S.done=true;S.phase=8;break}}
+const tag=(c,t)=>`<span class="tag t-${c}">${esc(t)}</span>`;
+function render(){pend=false;
+ const worst=S.health?Object.values(S.health):[],bad=worst.filter(x=>x!=='healthy').length,B=$('#banner');
+ if(S.metrics){const m=S.metrics;if(m.recovered){B.className='ok';B.textContent='Recovered. Verified from simulator state, not from model output.'}
+  else if(m.mitigated){B.className='work';B.textContent='Mitigated, not fixed. Human approval required'+(S.appr.length?' for: '+S.appr.map(a=>a.action).join(', '):'')+'. Safety policy was not overridden.'}
+  else{B.className='down';B.textContent='Not recovered. Escalate to a human.'}}
+ else if(S.err&&S.done){B.className='down';B.textContent=S.err}
+ else if(S.obs){B.className=bad?'down':'work';B.textContent=bad?`Incident active: ${bad} of ${worst.length} services unhealthy`:'All services healthy'}
+ $('#phases').innerHTML=PH.map((p,i)=>`<span class="${i<S.phase?'done':i===S.phase?'on':''}">${p}</span>`).join('');
+ // graph
+ if(S.obs){const POS=S.obs.layout;let g='';for(const[s,deps]of Object.entries(S.obs.topology))for(const[d,k]of deps){const a=POS[s],b=POS[d];g+=`<line class="edge ${k}" x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}"/>`}
+  for(const[n,p]of Object.entries(POS)){const lead=S.hyps.find(h=>h.id===S.lead);g+=`<g class="node ${S.health[n]} ${lead&&lead.service===n?'root':''}"><circle cx="${p[0]}" cy="${p[1]}" r="24"/><text x="${p[0]}" y="${p[1]+4}" text-anchor="middle">${n}</text><text x="${p[0]}" y="${p[1]+40}" text-anchor="middle" class="mute">${S.health[n]}</text></g>`}
+  $('#graph').innerHTML=g;$('#gtick').textContent='tick '+S.obs.tick;
+  $('#logs').innerHTML=S.obs.logs.map(l=>`<div class="log ${S.hl.includes(l.id)?'hit':''}" id="${l.id}"><span class="mute">${l.id}</span><span>t=${l.t}${l.count>1?'×'+l.count:''}</span><span class="lv-${l.level}">${esc(l.service)}: ${esc(l.message)}</span></div>`).join('')}
+ // hypotheses
+ if(S.hyps.length)$('#hyps').innerHTML=S.hyps.map(h=>{const v=S.sk&&S.sk.verdicts.find(x=>x.hypothesis===h.id);return`<div class="card ${h.id===S.lead?'lead':''}"><b>${h.id} ${esc(h.service)}</b> ${tag('ai',h.kind)} ${h.id===S.lead?tag('ok','leading'):''}<div class="bar"><i style="width:${Math.round(h.confidence*100)}%"></i></div><div class="mute">confidence ${(h.confidence*100).toFixed(0)}%</div><div>${esc(h.statement)}</div><div>${h.evidence.map(e=>`<button class="chip" data-ev="${h.evidence}">${e}</button>`).join('')}</div>${v?`<div class="mute" style="margin-top:4px">Skeptic: ${esc(v.challenge)}${v.alternative?' Alternative: '+esc(v.alternative):''}</div>`:''}</div>`}).join('');
+ // research
+ const r=S.res;if(r){$('#rstat').textContent=r.status;$('#research').innerHTML=(r.status==='disabled'?'Research is switched off for this run.':r.status==='unavailable'?`Unavailable: ${esc(r.reason)}. No citations used.`:r.status==='skipped'?`Skipped to save Tavily credits: ${esc(r.reason)}.`:'')+(r.queries||[]).map(q=>`<div class="mono">search: ${esc(q.query)}</div>`).join('')+(r.sources||[]).map(s=>`<div class="card"><b>${s.id}</b> <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title||s.url)}</a>${(r.findings||[]).filter(f=>f.source===s.id).map(f=>`<div>${tag(f.quote_verified?(f.stance==='challenges'?'warn':'ok'):'bad',f.quote_verified?f.stance:'unverified')} ${esc(f.hypothesis)}: ${esc(f.claim)}<div class="mute mono">“${esc(f.quote)}”</div></div>`).join('')}</div>`).join('')}
+ else if(S.rq)$('#research').innerHTML=S.rq.map(q=>`<div class="mono">search: ${esc(q.query)}</div>`).join('');
+ // candidates
+ $('#cstat').textContent=S.cands.length?`${S.cands.filter(c=>!c.policy.allowed).length} of ${S.cands.length} blocked`+(S.replan?', replanned once':''):'';
+ $('#cands tbody').innerHTML=S.cands.map(c=>{const o=c.simulated,p=c.policy;return`<tr class="${c.action===S.sel?'sel':''}"><td class="mono">${esc(c.action)}<div class="mute">${esc(c.rationale)}</div></td><td>${c.llm_predicts_resolved==null?'-':c.llm_predicts_resolved?'resolves':'no fix'}</td><td>${o?(o.resolved?tag('ok','resolves'):tag('warn','no fix'))+(o.shed_pct?` shed ${o.shed_pct}%`:'')+(o.recurrence_in_ticks!=null?` recurs in ${o.recurrence_in_ticks}`:''):'-'}</td><td>${p.allowed?tag('ok','allowed'):tag('bad','blocked')}<div class="mute">${p.checks.filter(x=>!x.passed).map(x=>esc(x.detail)).join('; ')}</div></td></tr>`}).join('');
+ // clinical impact (hospital mode)
+ const hosp=S.obs&&S.obs.domain==='hospital';$('#clin').hidden=!hosp;$('#note').hidden=!hosp;
+ if(hosp&&S.impact){$('#clinscore').textContent='score '+S.impact.score;$('#clinitems').innerHTML=(S.impact.items.length?S.impact.items.map(i=>`<div class="card">${esc(i)}</div>`).join(''):'<div class="card">No clinical impact</div>')+S.appr.map(a=>`<div class="card" style="border-color:var(--warn)">${tag('warn','approval needed')} <b class="mono">${esc(a.action)}</b><div class="mute">${esc(a.message)}</div></div>`).join('')+(S.mit?`<div class="card" style="border-color:var(--ok)">${tag('ok','mitigation executed')} <b class="mono">${esc(S.mit.action)}</b><div>Impact ${S.mit.risk_before} to ${S.mit.risk_after}. ${esc(S.mit.note)}</div></div>`:'')+(S.esc&&!S.mit?`<div class="card">${esc(S.esc)}</div>`:'')}
+ // verification
+ if(S.ver.length)$('#verify').innerHTML=S.ver.map(v=>`<div class="card"><b class="mono">${esc(v.action)}</b><div>Predicted matched observed: ${tag(v.prediction_matches?'ok':'bad',v.prediction_matches)}</div><div>Observed recovered: ${tag(v.recovered?'ok':'bad',v.recovered)}</div><div class="mono mute">${Object.entries(v.observed_health).map(([k,x])=>k+'='+x).join(' ')}</div>${v.recurrence_in_ticks!=null?`<div>${tag('warn','fault persists')} expect recurrence in ~${v.recurrence_in_ticks} ticks</div>`:''}</div>`).join('');
+ const m=S.metrics;if(m)$('#metrics').innerHTML=[['recovered',m.recovered?'yes':'no'],['root cause',m.root_cause_correct==null?'n/a':m.root_cause_correct?'correct':'wrong'],['ticks to recover',m.ticks_to_recovery??'-'],['wasted fixes',m.unnecessary_remediations],['blocked',`${m.blocked_by_policy}/${m.candidates}`],['red-team blocked',Math.round(m.probe_block_rate*100)+'%'],['citations ok',`${m.verified_citations}/${m.verified_citations+m.unverified_citations}`],['tavily searches',`${m.tavily_searches} (${m.tavily_live} billed)`],['seconds',m.wall_seconds]].concat(m.domain==='hospital'?[['clinical impact',m.clinical_risk_start+' to '+m.clinical_risk_end]]:[]).map(([k,v])=>`<div><b>${esc(v)}</b><span>${k}</span></div>`).join('');
+ const ok=S.llm.filter(x=>x.ok);$('#llmstat').textContent=S.llm.length?`${ok.length} calls`:'';
+ if(S.llm.length)$('#llm').innerHTML=S.llm.map(x=>x.ok?`${x.role}: ${esc(x.model)} ${x.latency_s}s ${x.prompt_tokens+x.completion_tokens} tok`:`<span class="lv-ERROR">${x.role}: ${esc(x.error)}</span>`).join('<br>');
+ if(S.probes.length)$('#probes').innerHTML=S.probes.map(p=>`${p.blocked?tag('bad','blocked'):tag('warn','ALLOWED')} ${esc(p.action)}`).join('<br>');
+ if(S.report){$('#report').textContent=S.report;$('#report').className=''}
+ if(S.replay)B.textContent='[Replay of a recorded live run, '+S.replay.recorded_at+', '+S.replay.models.join(', ')+'] '+B.textContent;
+ if(S.err&&!S.done)$('#banner').textContent+='  |  '+S.err}
+const kick=()=>{if(!pend){pend=true;requestAnimationFrame(render)}};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-ev]');if(b){S.hl=b.dataset.ev.split(',');render();const t=document.getElementById(S.hl[0]);t&&t.scrollIntoView({block:'nearest'})}});
+async function start(){fresh();if(es)es.close();$('#run').disabled=true;['hyps','research','verify','probes','llm'].forEach(i=>{$('#'+i).textContent='...'});$('#metrics').innerHTML='';$('#report').textContent='';
+ const r=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario:$('#sc').value,mode:$('#mode').value,research:$('#rs').value})});
+ if(!r.ok){const e=await r.json().catch(()=>({}));$('#banner').textContent='Could not start run: '+(e.error||r.status);$('#run').disabled=false;return}
+ const{run_id,notice}=await r.json();if(notice)$('#banner').textContent=notice;es=new EventSource(`/api/runs/${run_id}/stream`);
+ es.onmessage=m=>{const ev=JSON.parse(m.data);reduce(ev);kick();if(ev.type==='done'||ev.type==='fatal'||ev.type==='escalate'&&0){}};
+ es.onerror=()=>{es.close();$('#run').disabled=false;render();refreshUsage()}}
+$('#run').onclick=start;
+let SC=[];function fillScen(){const d=$('#dom').value;$('#sc').innerHTML=SC.filter(s=>s.domain===d).map(s=>`<option value="${s.id}" title="${esc(s.description)}">${esc(s.title)}</option>`).join('')}
+$('#dom').onchange=fillScen;
+async function refreshUsage(){try{const st=await (await fetch('/api/status')).json(),u=st.usage||{};
+ $('#usage').textContent=`API usage so far: Nebius ${u.nebius_calls||0} calls, ${u.nebius_tokens||0} tokens | Tavily ${u.tavily_live_searches||0} live searches (cache serves repeats free)`+(st.public?` | live AI runs left in this demo: ${st.live_runs_left}`:'')}catch(e){}}
+async function init(){refreshUsage();const st=await (await fetch('/api/status?check=1')).json();
+ SC=st.scenarios;fillScen();
+ const nb=st.nebius;if(!nb.configured){$('#mode [value=ai]').disabled=true;$('#mode').value='baseline';$('#banner').textContent='No NEBIUS_API_KEY: AI mode is disabled. The rule-based baseline still runs.'}
+ else if(nb.error)$('#banner').textContent='Token Factory problem: '+nb.error;
+ else if(nb.models)$('#banner').textContent=`Ready. Reasoning: ${nb.models.reasoning}. Fast: ${nb.models.fast}. Tavily: ${st.tavily.status}.`;
+ if(!st.tavily.available)$('#rs').title='Tavily is unavailable: research will be reported as unavailable';if(!st.recordings.length)$('#mode [value=replay]').disabled=true;
+ const ev=await (await fetch('/api/eval')).json();
+ $('#eval').innerHTML=ev.missing?'No evaluation recorded yet. Run <span class="mono">python -m aegismesh.eval</span>.':`<div class="mute">${ev.meta.scenarios.length} scenarios x ${ev.meta.repeats} repeat(s), ${esc(ev.meta.finished)}. Models: ${esc(ev.meta.models.join(', ')||'none (baseline only)')}</div><table><tr><th>condition</th><th>success</th><th>recovery</th><th>root cause</th><th>ticks</th><th>wasted fixes</th><th>blocked</th><th>tavily searches (billed)</th><th>verified citations</th></tr>${Object.entries(ev.summary).map(([k,s])=>`<tr><td>${k}</td><td>${s.success_rate}</td><td>${s.recovery_rate}</td><td>${s.root_cause_accuracy??'n/a'}</td><td>${s.mean_ticks_to_recovery??'-'}</td><td>${s.unnecessary_remediations}</td><td>${s.candidates_blocked}/${s.candidates_total}</td><td>${s.tavily_searches??0} (${s.tavily_live_searches??0})</td><td>${s.verified_citations}</td></tr>`).join('')}</table>`}
+init().catch(e=>{$('#banner').textContent='Server unreachable: '+e});
+</script>
+</body>
+</html>
