@@ -19,7 +19,7 @@ Testing instructions for judges (paste into the "testing instructions" box):
 
 **Demo video (YouTube, public, under 3 minutes):** https://youtu.be/WLvriLDNjcg
 
-**Public code repository:** ⟦GitHub link⟧ (MIT license, visible in the About section)
+**Public code repository:** https://github.com/eswarsuhas-27/aegismesh (MIT license, visible in the About section)
 
 **Feedback on Nebius Token Factory / AI Cloud / NVIDIA tools:** paste `06_feedback.md` after editing it with your own observations.
 
