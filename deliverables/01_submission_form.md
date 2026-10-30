@@ -17,7 +17,7 @@ Why: a workflow agent that runs itself end to end (detect, investigate, research
 Testing instructions for judges (paste into the "testing instructions" box):
 > Open the URL. Pick an environment (Cloud services or Hospital IT) and a scenario, keep Mode = "AI investigation", and press "Inject incident and respond". Watch hypotheses, Tavily sources with verified quotes, candidate actions (model prediction vs simulator result vs policy verdict) and the verified recovery. Vendor-style scenarios show Tavily research most clearly. Live AI runs are capped to protect API credits; when the cap is reached the app automatically plays a clearly labelled recording of a real live run, so the demo always works. Full local setup is in the README.
 
-**Demo video (YouTube, public, under 3 minutes):** ⟦YouTube link⟧
+**Demo video (YouTube, public, under 3 minutes):** https://youtu.be/WLvriLDNjcg
 
 **Public code repository:** ⟦GitHub link⟧ (MIT license, visible in the About section)
 
